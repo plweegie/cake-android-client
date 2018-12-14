@@ -5,10 +5,13 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.list_item_layout.view.*
 
-
 class CakeAdapter : RecyclerView.Adapter<CakeAdapter.CakeHolder>() {
 
     var data: MutableList<Cake> = mutableListOf()
+    set(value) {
+        field = value
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CakeHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -21,6 +24,8 @@ class CakeAdapter : RecyclerView.Adapter<CakeAdapter.CakeHolder>() {
 
     override fun getItemCount(): Int = data.size
 
+    override fun getItemId(position: Int): Long = position.toLong()
+
     inner class CakeHolder(private val inflater: LayoutInflater, private val parent: ViewGroup, private val layoutResId: Int) :
             RecyclerView.ViewHolder(inflater.inflate(layoutResId, parent, false)) {
 
@@ -28,10 +33,9 @@ class CakeAdapter : RecyclerView.Adapter<CakeAdapter.CakeHolder>() {
             itemView.apply {
                 title_tv.text = cake.title
                 desc_tv.text = cake.description
-                image_iv.setImageBitmap(ImageLoader.loadBitmapFromUrl(cake.imageUrl))
+                ImageLoader.loadBitmapFromUrl(cake.imageUrl, image_iv)
             }
         }
-
     }
 }
 

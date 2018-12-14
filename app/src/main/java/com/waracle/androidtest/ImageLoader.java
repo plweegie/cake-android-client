@@ -2,8 +2,8 @@ package com.waracle.androidtest;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.IOException;
@@ -24,23 +24,22 @@ public class ImageLoader {
      *
      * @param url image url
      */
-    public static Bitmap loadBitmapFromUrl(String url) {
-
-        byte[] data = new byte[0];
+    public static void loadBitmapFromUrl(String url, final ImageView imageView) {
 
         if (TextUtils.isEmpty(url)) {
             throw new InvalidParameterException("URL is empty!");
         }
 
         // Can you think of a way to improve loading of bitmaps
-        // that have already been loaded previously??
-        try {
-            data = loadImageData(url);
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
-        }
+        // that have already been loaded previously?
+        LoadImageTask loadImageTask = new LoadImageTask() {
+            @Override
+            protected void onPostExecute(Bitmap bitmap) {
+                imageView.setImageBitmap(bitmap);
+            }
+        };
 
-        return convertToBitmap(data);
+        loadImageTask.execute(url);
     }
 
     private static byte[] loadImageData(String url) throws IOException {
@@ -71,4 +70,22 @@ public class ImageLoader {
     private static Bitmap convertToBitmap(byte[] data) {
         return BitmapFactory.decodeByteArray(data, 0, data.length);
     }
+
+    private static class LoadImageTask extends AsyncTask<String, Void, Bitmap> {
+
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+
+            byte[] data = null;
+
+            try {
+                data = loadImageData(strings[0]);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return convertToBitmap(data);
+        }
+    }
 }
+
