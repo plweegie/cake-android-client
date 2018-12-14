@@ -17,8 +17,6 @@ import java.security.InvalidParameterException;
  */
 public class ImageLoader {
 
-    private static final String TAG = ImageLoader.class.getSimpleName();
-
     /**
      * Simple function for loading a bitmap image from the web
      *
@@ -30,16 +28,20 @@ public class ImageLoader {
             throw new InvalidParameterException("URL is empty!");
         }
 
-        // Can you think of a way to improve loading of bitmaps
-        // that have already been loaded previously?
-        LoadImageTask loadImageTask = new LoadImageTask() {
-            @Override
-            protected void onPostExecute(Bitmap bitmap) {
-                imageView.setImageBitmap(bitmap);
-            }
-        };
+        final Bitmap targetBitmap = getBitmapFromCache(url);
 
-        loadImageTask.execute(url);
+        if (targetBitmap != null) {
+            imageView.setImageBitmap(targetBitmap);
+        } else {
+            LoadImageTask loadImageTask = new LoadImageTask() {
+                @Override
+                protected void onPostExecute(Bitmap bitmap) {
+                    imageView.setImageBitmap(bitmap);
+                }
+            };
+
+            loadImageTask.execute(url);
+        }
     }
 
     private static byte[] loadImageData(String url) throws IOException {
@@ -71,6 +73,16 @@ public class ImageLoader {
         return BitmapFactory.decodeByteArray(data, 0, data.length);
     }
 
+    private static void addBitmapToCache(String key, Bitmap bitmap) {
+        if (getBitmapFromCache(key) == null) {
+            BitmapCache.INSTANCE.put(key, bitmap);
+        }
+    }
+
+    private static Bitmap getBitmapFromCache(String key) {
+        return BitmapCache.INSTANCE.get(key);
+    }
+
     private static class LoadImageTask extends AsyncTask<String, Void, Bitmap> {
 
         @Override
@@ -84,7 +96,12 @@ public class ImageLoader {
                 e.printStackTrace();
             }
 
-            return convertToBitmap(data);
+            Bitmap output = convertToBitmap(data);
+
+            if (output != null) {
+                addBitmapToCache(strings[0], output);
+            }
+            return output;
         }
     }
 }
