@@ -46,6 +46,8 @@ public class ImageLoader {
 
     private static byte[] loadImageData(String url) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Cache-Control", "private, max-age=86400");
         InputStream inputStream = null;
         try {
             try {

@@ -42,7 +42,10 @@ class CakeViewModel : ViewModel() {
 
         @Throws(IOException::class, JSONException::class)
         private fun loadData(url: String): List<Cake> {
-            val urlConnection = URL(url).openConnection() as HttpURLConnection
+            val urlConnection = (URL(url).openConnection() as HttpURLConnection).apply {
+                requestMethod = "GET"
+                setRequestProperty("Cache-Control", "private, max-age=86400")
+            }
 
             try {
                 val inputStream = BufferedInputStream(urlConnection.inputStream)
