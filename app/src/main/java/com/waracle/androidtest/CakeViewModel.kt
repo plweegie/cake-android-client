@@ -31,13 +31,17 @@ class CakeViewModel : ViewModel() {
         return cakes
     }
 
+    fun refreshCakes() {
+        CakeLoaderTask().execute(JSON_URL)
+    }
+
     inner class CakeLoaderTask : AsyncTask<String, Void, List<Cake>>() {
         override fun doInBackground(vararg urls: String?): List<Cake> {
             return loadData(urls[0]!!)
         }
 
         override fun onPostExecute(result: List<Cake>?) {
-            cakes?.value = result
+            cakes?.postValue(result)
         }
 
         @Throws(IOException::class, JSONException::class)
