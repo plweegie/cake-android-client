@@ -4,6 +4,7 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.os.AsyncTask
+import android.support.annotation.VisibleForTesting
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -45,7 +46,8 @@ class CakeViewModel : ViewModel() {
         }
 
         @Throws(IOException::class, JSONException::class)
-        private fun loadData(url: String): List<Cake> {
+        @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+        fun loadData(url: String): List<Cake> {
             val urlConnection = (URL(url).openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
                 setRequestProperty("Cache-Control", "private, max-age=86400")
@@ -68,7 +70,8 @@ class CakeViewModel : ViewModel() {
             }
         }
 
-        private fun convertJSONResponse(jsonArray: JSONArray): List<Cake> {
+        @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+        fun convertJSONResponse(jsonArray: JSONArray): List<Cake> {
 
             val cakes: MutableList<Cake> = mutableListOf()
             for (i in 0 until jsonArray.length()) {
@@ -77,7 +80,8 @@ class CakeViewModel : ViewModel() {
             return cakes
         }
 
-        private fun JSONObject.toCake(): Cake = Cake(
+        @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+        fun JSONObject.toCake(): Cake = Cake(
                 getString("title"),
                 getString("desc"),
                 getString("image")
