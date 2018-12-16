@@ -1,9 +1,11 @@
 package com.waracle.androidtest
 
+import android.graphics.Bitmap
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.list_item_layout.view.*
+import kotlinx.coroutines.*
 
 class CakeAdapter : RecyclerView.Adapter<CakeAdapter.CakeHolder>() {
 
@@ -26,15 +28,26 @@ class CakeAdapter : RecyclerView.Adapter<CakeAdapter.CakeHolder>() {
 
     override fun getItemId(position: Int): Long = position.toLong()
 
-    inner class CakeHolder(private val inflater: LayoutInflater, private val parent: ViewGroup, private val layoutResId: Int) :
+    inner class CakeHolder(inflater: LayoutInflater, parent: ViewGroup, layoutResId: Int) :
             RecyclerView.ViewHolder(inflater.inflate(layoutResId, parent, false)) {
 
         fun bind(cake: Cake) {
-            itemView.apply {
-                title_tv.text = cake.title
-                desc_tv.text = cake.description
-                ImageLoader.loadBitmapFromUrl(cake.imageUrl, image_iv)
+
+            GlobalScope.launch(Dispatchers.Main) {
+                val bitmap = withContext(Dispatchers.Default) {
+                    getBitmapFromUrl(cake.imageUrl)
+                }
+
+                itemView.apply {
+                    title_tv.text = cake.title
+                    desc_tv.text = cake.description
+                    image_iv.setImageBitmap(bitmap)
+                }
             }
+        }
+
+        private suspend fun getBitmapFromUrl(url: String): Bitmap = runBlocking {
+            return@runBlocking async { ImageLoader.loadBitmapFromUrl(url) }.await()
         }
     }
 }

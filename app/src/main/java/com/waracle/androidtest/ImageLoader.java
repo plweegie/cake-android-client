@@ -2,9 +2,7 @@ package com.waracle.androidtest;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.text.TextUtils;
-import android.widget.ImageView;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +20,7 @@ public class ImageLoader {
      *
      * @param url image url
      */
-    public static void loadBitmapFromUrl(String url, final ImageView imageView) {
+    public static Bitmap loadBitmapFromUrl(String url) {
 
         if (TextUtils.isEmpty(url)) {
             throw new InvalidParameterException("URL is empty!");
@@ -31,16 +29,22 @@ public class ImageLoader {
         final Bitmap targetBitmap = getBitmapFromCache(url);
 
         if (targetBitmap != null) {
-            imageView.setImageBitmap(targetBitmap);
+            return targetBitmap;
         } else {
-            LoadImageTask loadImageTask = new LoadImageTask() {
-                @Override
-                protected void onPostExecute(Bitmap bitmap) {
-                    imageView.setImageBitmap(bitmap);
-                }
-            };
+            byte[] data = null;
 
-            loadImageTask.execute(url);
+            try {
+                data = loadImageData(url);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Bitmap output = convertToBitmap(data);
+
+            if (output != null) {
+                addBitmapToCache(url, output);
+            }
+            return output;
         }
     }
 
@@ -85,26 +89,5 @@ public class ImageLoader {
         return BitmapCache.INSTANCE.get(key);
     }
 
-    private static class LoadImageTask extends AsyncTask<String, Void, Bitmap> {
-
-        @Override
-        protected Bitmap doInBackground(String... strings) {
-
-            byte[] data = null;
-
-            try {
-                data = loadImageData(strings[0]);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            Bitmap output = convertToBitmap(data);
-
-            if (output != null) {
-                addBitmapToCache(strings[0], output);
-            }
-            return output;
-        }
-    }
 }
 
